@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { Apple, PlayCircle, Sparkles } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import { appConfig } from '../config/env';
 import { useAuth } from '../context/AuthContext';
 
 type LoginLocationState = {
@@ -14,15 +15,22 @@ export function Login() {
   const location = useLocation();
   const { isAuthLoading, isLoggedIn, loginWithProvider } = useAuth();
   const [mode, setMode] = useState<'login' | 'signup'>('signup');
+  const [loginError, setLoginError] = useState<string | null>(null);
   const from = (location.state as LoginLocationState | null)?.from ?? '/home';
+  const isRemoteMode = appConfig.serviceMode === 'remote';
 
   if (isLoggedIn) {
     return <Navigate to={from} replace />;
   }
 
   const handleLogin = async (provider: 'apple' | 'google' | 'demo') => {
-    await loginWithProvider(provider);
-    navigate(from, { replace: true });
+    setLoginError(null);
+    try {
+      await loginWithProvider(provider);
+      navigate(from, { replace: true });
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Login failed. Please try again.');
+    }
   };
 
   return (
@@ -119,13 +127,19 @@ export function Login() {
 
           <button
             onClick={() => handleLogin('demo')}
-            disabled={isAuthLoading}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 py-4 font-semibold text-white transition-colors hover:bg-white/15"
+            disabled={isAuthLoading || isRemoteMode}
+            className="flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 py-4 font-semibold text-white transition-colors hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
           >
             <PlayCircle className="h-5 w-5" />
-            {isAuthLoading ? 'Signing in...' : 'Continue with Demo Account'}
+            {isAuthLoading ? 'Signing in...' : isRemoteMode ? 'Demo disabled in Supabase mode' : 'Continue with Demo Account'}
           </button>
+
+          {loginError && (
+            <div className="rounded-2xl bg-red-500/15 px-4 py-3 text-sm font-semibold text-red-100">
+              {loginError}
+            </div>
+          )}
 
           <p className="pt-4 text-center text-xs text-gray-500">
             Mock auth only. Real accounts can plug into this flow later.

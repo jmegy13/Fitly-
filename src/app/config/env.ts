@@ -13,7 +13,8 @@ export const appConfig = {
   serviceMode: readServiceMode(import.meta.env.VITE_SERVICE_MODE),
   enableRemoteAi: readBoolean(import.meta.env.VITE_ENABLE_REMOTE_AI),
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL ?? '',
-  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY ?? '',
+  supabaseAnonKey:
+    import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '',
   aiTryOnApiUrl: import.meta.env.VITE_AI_TRYON_API_URL ?? '',
   geminiApiKey: import.meta.env.VITE_GEMINI_API_KEY ?? '',
   geminiModel: import.meta.env.VITE_GEMINI_MODEL ?? 'gemini-2.5-flash-image',
